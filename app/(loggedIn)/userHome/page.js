@@ -52,7 +52,6 @@ const UserHome = () => {
 
   return (
     <div className="container mx-auto py-8">
-      {/* Leaderboard */}
       <Card>
         <CardHeader>
           <CardTitle className="lg:text-6xl font-bold text-5xl">Leaderboard</CardTitle>
