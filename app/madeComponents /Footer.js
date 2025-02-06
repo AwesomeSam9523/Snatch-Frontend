@@ -3,7 +3,8 @@ import { FaInstagram, FaLinkedin, FaXTwitter, FaGlobe } from "react-icons/fa6";
 
 const Footer = () => {
   return (
-    <footer className="relative bg-gradient-to-t from-green-700  to-transparent text-white py-8 px-6 md:px-16">
+    <footer className="relative bg-gradient-to-t from-black via-green-600 pt-8 mt-8 text-white py-10 px-8 md:px-16">
+
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between flex-wrap">
         
         {/* Left Section: Logos */}
@@ -18,13 +19,17 @@ const Footer = () => {
 
         {/* Middle Section: Contact Info */}
         <div className="text-white text-center md:text-left mt-6 md:mt-0">
-          <p className="font-semibold">Rishi Joshi</p>
-          <p className="text-sm opacity-80">+91 99806 10103</p>
-          <p className="text-sm opacity-60">Chairperson</p>
+          <div className="text-center ">
+            <p className="text-20px font-semibold">Rishi Joshi</p>
+            <p className="text-9px opacity-100">+91 99806 10103</p>
+            <p className="text-9px opacity-100">Chairperson</p>
+          </div>
           <br />
-          <p className="font-semibold">Pranav Bhardwaj</p>
-          <p className="text-sm opacity-80">+91 87885 54806</p>
-          <p className="text-sm opacity-60">Vice-Chairperson</p>
+          <div className="text-center ">
+          <p className="text-20px font-semibold">Pranav Bhardwaj</p>
+          <p className="text-9px opacity-100">+91 87885 54806</p>
+          <p className="text-9px opacity-100">Vice-Chairperson</p>
+          </div>
         </div>
 
         {/* Right Section: Website & Social Icons */}
@@ -33,7 +38,7 @@ const Footer = () => {
             <FaGlobe className="text-xl" />
             <span className="underline">https://cs.ieeemuj.com/</span>
           </a>
-          <div className="flex gap-4 mt-2">
+          <div className="flex justify-center gap-4 mt-2">
             <a href="#" className="p-2 rounded-full border border-white hover:bg-white hover:text-green-500 transition">
               <FaInstagram className="text-xl" />
             </a>
