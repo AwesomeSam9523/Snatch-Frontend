@@ -1,6 +1,6 @@
 import { Suspense } from "react";
-import Login from "./madeComponents /Login";
-import FullScreenLoading from "./madeComponents /FullScreenLoading";
+import Login from "./madeComponents/Login";
+import FullScreenLoading from "./madeComponents/FullScreenLoading";
 
 
 const Page = () => {
