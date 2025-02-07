@@ -3,7 +3,7 @@ import { FaInstagram, FaLinkedin, FaXTwitter, FaGlobe } from "react-icons/fa6";
 
 const Footer = () => {
   return (
-    <footer className="relative bg-gradient-to-t from-black via-green-600 pt-8 mt-8 text-white py-10 px-8 md:px-16">
+    <footer className="relative bottom-0 w-full bg-gradient-to-t from-black via-green-600 pt-8 mt-8 text-white py-10 px-8 md:px-16">
 
       <div className="container mx-auto flex flex-col md:flex-row items-center justify-between flex-wrap">
         

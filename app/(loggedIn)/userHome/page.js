@@ -3,10 +3,10 @@ import React, { useState } from "react";
 import Image from "next/image";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHead, TableBody, TableRow, TableCell } from "@/components/ui/table";
-import FreezeDialog from "@/app/madeComponents /FreezeDialog";
-import ShieldDialog from "@/app/madeComponents /ShieldDialog";
-import ReboundDialog from "@/app/madeComponents /ReboundDialog";
-import WildcardDialog from "@/app/madeComponents /WildcardDialog";
+import FreezeDialog from "@/app/madeComponents/FreezeDialog";
+import ShieldDialog from "@/app/madeComponents/ShieldDialog";
+import ReboundDialog from "@/app/madeComponents/ReboundDialog";
+import WildcardDialog from "@/app/madeComponents/WildcardDialog";
 
 // Shield Dialog Component
 
@@ -54,14 +54,14 @@ const UserHome = () => {
     <div className="container mx-auto py-8">
       <Card>
         <CardHeader>
-          <CardTitle className="lg:text-6xl font-bold text-5xl">Leaderboard</CardTitle>
+          <CardTitle className="font-Hanson lg:text-6xl font-bold text-5xl">Leaderboard</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="max-h-64 overflow-y-auto">
+          <div className=" flex flex-row justify-evenly max-h-64 overflow-y-auto">
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>#</TableCell>
+                  <TableCell >#</TableCell>
                   <TableCell>Player</TableCell>
                   <TableCell>Score</TableCell>
                 </TableRow>
@@ -78,7 +78,7 @@ const UserHome = () => {
 
       {/* Power-Ups */}
       <div className="mt-8">
-        <h2 className="lg:text-6xl font-bold text-5xl mb-4 mx-4">Power Ups</h2>
+        <h2 className="font-Hanson lg:text-6xl font-bold text-5xl mb-4 mx-4">Power Ups</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {powerUps.map((item, index) => (
             <PowerUpItem key={index} title={item.title} imageSrc={item.imageSrc} onClick={item.onClick} />

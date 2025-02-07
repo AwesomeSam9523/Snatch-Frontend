@@ -110,12 +110,12 @@ const AdminPanel = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col min-h-[300px]">
       <Navbar />
 
       <div className="my-8 flex justify-between mx-40 space-x-4 mb-8">
         <span
-          className={`font-'Hanson' cursor-pointer text-5xl font-bold ${
+          className={`font-Hanson cursor-pointer text-5xl font-bold ${
             activeTab === "rounds" ? "text-[#3F3F3F]" : "text-gray-500"
           }`}
           onClick={() => setActiveTab("rounds")}
@@ -123,7 +123,7 @@ const AdminPanel = () => {
           Rounds
         </span>
         <span
-          className={`cursor-pointer text-5xl font-bold ${
+          className={` font-Hanson cursor-pointer text-5xl font-bold ${
             activeTab === "manage" ? "text-[#3F3F3F]" : "text-gray-500"
           }`}
           onClick={() => setActiveTab("manage")}
@@ -135,11 +135,11 @@ const AdminPanel = () => {
       {activeTab === "rounds" && (
         <div className="space-y-6">
           {/* Round Selection */}
-          <div className="flex justify-between mx-10 space-x-4 mb-4">
+          <div className=" p-4 rounded-full border border-gray flex justify-between mx-10 space-x-4 mb-4">
             {[1, 2, 3].map((round) => (
               <div
                 key={round}
-                className={`px-40 py-3 text-xl rounded-tl-[28.03px] rounded-tr-[28.03px] rounded-bl-[28.03px] rounded-br-[28.03px] border-t-[0.7px] border-gray-500 opacity-100 shadow-md font-bold text-white transition ${
+                className={`font-Hanson px-36 py-3 text-xl rounded-tl-[28.03px] rounded-tr-[28.03px] rounded-bl-[28.03px] rounded-br-[28.03px] border-t-[0.7px]  opacity-100 shadow-md font-bold text-white transition ${
                   selectedRound === round ? "bg-[#03941B]" : "bg-gray-300"
                 }`}
                 onClick={() => handleRoundClick(round)}
@@ -148,7 +148,7 @@ const AdminPanel = () => {
               </div>
             ))}
           </div>
-
+          {/*SEND REQUEST TO BAKEND WITH ROUND NO AND POOL NO , POOL,JS AND POOL WILL FILTER   }
           {/* Display teams in the selected round */}
           {selectedRound && (
             <Pool
@@ -162,11 +162,11 @@ const AdminPanel = () => {
         <div className="m-4 bg-white p-4 rounded-lg shadow-md">
           {/* Sub-tabs for Manage section */}
           <div
-            className=" text-2xl flex justify-center
+            className="p-4 rounded-full border border-gray  text-2xl flex justify-center
            space-x-4 mx-20 mb-4"
           >
             <button
-              className={`px-40 py-3 rounded-tl-[28.03px] rounded-tr-[28.03px] rounded-bl-[28.03px] rounded-br-[28.03px] border-t-[0.7px] border-gray-500 opacity-100   ${
+              className={`font-Hanson px-40 py-3 rounded-tl-[28.03px] rounded-tr-[28.03px] rounded-bl-[28.03px] rounded-br-[28.03px] border-t-[0.7px]  opacity-100   ${
                 activeSubTab === "teams"
                   ? "bg-[#03941B] text-white font-semibold"
                   : "bg-gray-200 text-black"
@@ -176,7 +176,7 @@ const AdminPanel = () => {
               Teams
             </button>
             <button
-              className={`px-40 py-3 rounded-tl-[28.03px] rounded-tr-[28.03px] rounded-bl-[28.03px] rounded-br-[28.03px] border-t-[0.7px] border-gray-500 opacity-100 ${
+              className={`font-Hanson px-40 py-3 rounded-tl-[28.03px] rounded-tr-[28.03px] rounded-bl-[28.03px] rounded-br-[28.03px] border-t-[0.7px] opacity-100 ${
                 activeSubTab === "edit"
                   ? "bg-[#03941B] text-white font-semibold"
                   : "bg-gray-200 text-black"
@@ -195,6 +195,7 @@ const AdminPanel = () => {
                 onClick={() => setShowForm(true)}
               >
                 <FaPlus />
+                {/*SEND RQUEST TO BACKEND AND DISPLAY POPUP*/}
                 <span className="bg-[#03941B]">Add Team</span>
               </button>
 
@@ -204,7 +205,8 @@ const AdminPanel = () => {
                     key={team.id}
                     className="flex justify-between items-center p-2 border-b"
                   >
-                    <span className="flex justify-center space-x-2">
+                    {/* Left Section: Avatar + Name + Pool */}
+                    <div className="flex items-center space-x-3">
                       {team.avatar.startsWith("/") ? (
                         <img
                           src={team.avatar}
@@ -214,24 +216,8 @@ const AdminPanel = () => {
                       ) : (
                         <span className="text-3xl">{team.avatar}</span>
                       )}
-                      <span>{team.name}</span>
-                      <span className=" ">#Pool{team.pool}</span>
-                    </span>
-                    <div className="space-x-3">
-                      <button
-                        className="text-red-500 hover:text-red-700"
-                        onClick={() => {
-                          setSelectedTeamId(team.id);
-                          setShowDeleteModal(true);
-                        }}
-                      ></button>
-                      <button
-                        className="text-yellow-500 hover:text-yellow-700"
-                        onClick={() => {
-                          setSelectedTeamId(team.id);
-                          setShowDisqualifyModal(true);
-                        }}
-                      ></button>
+                      <span className="font-medium">{team.name}</span>
+                      <span className="text-gray-600">#Pool{team.pool}</span>
                     </div>
                   </li>
                 ))}
@@ -247,7 +233,7 @@ const AdminPanel = () => {
                     key={team.id}
                     className="flex justify-between items-center p-2 border-b"
                   >
-                    <span className="flex items-center space-x-2">
+                    <span className="flex items-center space-x-10">
                       {team.avatar.startsWith("/") ? (
                         <img
                           src={team.avatar}
@@ -261,22 +247,23 @@ const AdminPanel = () => {
                     </span>
                     <div className="space-x-3">
                       <button
-                        className="text-red-500 hover:text-red-700"
+                        className="bg-[#03941B] text-white px-4 py-2 rounded-full hover:bg-red-700 transition"
                         onClick={() => {
                           setSelectedTeamId(team.id);
                           sh(true);
                         }}
                       >
-                        <FaTrash />
+                        Delete
                       </button>
+
                       <button
-                        className="text-yellow-500 hover:text-yellow-700"
+                        className="bg-[#AD0000] text-white px-4 py-2 rounded-full hover:bg-green-700 transition"
                         onClick={() => {
                           setSelectedTeamId(team.id);
                           setShowDisqualifyModal(true);
                         }}
                       >
-                        <FaBan />
+                        Disqualify
                       </button>
                     </div>
                   </li>
