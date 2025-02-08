@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
-const ReboundDialog = ({ open, onOpenChange }) => {
+const ReboundDialog = ({ open, onOpenChange, onConfirm }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-[#c60000] max-w-md rounded-lg">
@@ -41,7 +41,10 @@ const ReboundDialog = ({ open, onOpenChange }) => {
           </Button>
           <Button
             className="bg-white text-red-600 hover:bg-gray-100 px-8"
-            onClick={() => onOpenChange(false)}
+            onClick={() => {
+              onConfirm(); // Start the timer when confirmed
+              onOpenChange(false); // Close the dialog
+            }}
           >
             CONFIRM
           </Button>

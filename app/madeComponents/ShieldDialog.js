@@ -1,5 +1,4 @@
 import React from "react";
-import { Shield } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -11,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
-const ShieldDialog = ({ open, onOpenChange }) => {
+const ShieldDialog = ({ open, onOpenChange, onConfirm }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-[#c68e00] max-w-md rounded-lg">
@@ -32,7 +31,7 @@ const ShieldDialog = ({ open, onOpenChange }) => {
             5 MINUTES. CAN BE USED ONLY ONCE!
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="flex mx-auto  mt-4">
+        <DialogFooter className="flex mx-auto mt-4">
           <Button
             variant="destructive"
             className="bg-red-700 hover:bg-red-800 text-white px-8"
@@ -42,7 +41,10 @@ const ShieldDialog = ({ open, onOpenChange }) => {
           </Button>
           <Button
             className="bg-white text-amber-600 hover:bg-gray-100 px-8"
-            onClick={() => onOpenChange(false)}
+            onClick={() => {
+              onConfirm(); // Trigger the start of the timer
+              onOpenChange(false); // Close the dialog
+            }}
           >
             CONFIRM
           </Button>

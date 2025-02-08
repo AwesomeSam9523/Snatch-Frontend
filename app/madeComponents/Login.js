@@ -1,109 +1,221 @@
 "use client";
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { FaArrowRight } from "react-icons/fa";
+
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/router"; // Import useRouter to handle URL and teamId extraction
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Table, TableHead, TableBody, TableRow, TableCell } from "@/components/ui/table";
+import FreezeDialog from "@/app/madeComponents/FreezeDialog";
+import ShieldDialog from "@/app/madeComponents/ShieldDialog";
+import ReboundDialog from "@/app/madeComponents/ReboundDialog";
+import WildcardDialog from "@/app/madeComponents/WildcardDialog";
 import Image from "next/image";
 
-const BASE_URL = "https://snatch-ieeecs-backend.vercel.app"; // Replace with actual backend URL
+const LeaderboardItem = ({ rank, name, score }) => (
+  <TableRow className="transition-transform transform hover:scale-105 hover:bg-gray-100 duration-300 ease-in-out">
+    <TableCell className="font-medium">{rank}</TableCell>
+    <TableCell>{name}</TableCell>
+    <TableCell className="text-right">{score}</TableCell>
+  </TableRow>
+);
 
-const Login = () => {
-  const router = useRouter();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+const PowerUpItem = ({ title, imageSrc, onClick, disabled }) => (
+  <div
+    className={`flex flex-col items-center justify-center p-4 bg-white rounded-xl shadow-2xl transition-all transform hover:scale-105 hover:shadow-xl hover:cursor-pointer duration-300 ease-in-out ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+    onClick={disabled ? null : onClick}
+  >
+    <Image src={imageSrc} alt={title} width={200} height={200} className="mb-2" />
+    <h3 className="text-lg font-semibold">{title}</h3>
+  </div>
+);
 
-  const handleLogin = async () => {
-    if (!username || !password) {
-      alert("Please enter both username and password.");
-      return;
-    }
+const UserHome = () => {
+  const searchParams = useSearchParams();
+  const token = searchParams.get("token");
+  const router = useRouter(); // Use the router to extract teamId from the URL
+  const teamId = router.query.teamId; // Assuming teamId is in the query params
 
-    setLoading(true);
-    try {
-      const response = await fetch(`${BASE_URL}/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      });
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [powerUps, setPowerUps] = useState([]); // Store power-up data
+  const [isFreezeOpen, setIsFreezeOpen] = useState(false);
+  const [isShieldOpen, setIsShieldOpen] = useState(false);
+  const [isReboundOpen, setIsReboundOpen] = useState(false);
+  const [isWildcardOpen, setIsWildcardOpen] = useState(false);
 
-      const data = await response.json();
-      
-      if (response.ok) {
-        alert("Login Successful!");
-        router.push("/userHome");
-      } else {
-        alert(data.message || "Invalid credentials!");
+  const [currentPowerUp, setCurrentPowerUp] = useState(null);
+  const [timer, setTimer] = useState(600); // 10 minutes countdown in seconds
+  const [selectedPowerUp, setSelectedPowerUp] = useState(null);
+
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      try {
+        const response = await fetch("https://snatch-ieeecs-backend.vercel.app/leaderboard", {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await response.json();
+        if (data.success) {
+          setLeaderboard(
+            data.data.sort((a, b) => b.score - a.score).map((item, index) => ({
+              rank: index + 1,
+              name: item.team.name,
+              score: item.score,
+            }))
+          );
+        }
+      } catch (error) {
+        console.error("Failed to fetch leaderboard:", error);
       }
-    } catch (error) {
-      console.error("Login failed:", error);
-      alert("Something went wrong. Please try again.");
-    } finally {
-      setLoading(false);
+    };
+
+    const fetchPowerUps = async () => {
+      try {
+        const response = await fetch("https://snatch-ieeecs-backend.vercel.app/powerups", {
+          method: "GET",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await response.json();
+        if (data.success) {
+          setPowerUps(data.data[0].powerups); // Assuming the power-ups are in the data array
+        }
+      } catch (error) {
+        console.error("Failed to fetch power-ups:", error);
+      }
+    };
+
+    if (token) {
+      fetchLeaderboard();
+      fetchPowerUps(); // Fetch the power-ups when the component is mounted
+    }
+  }, [token]);
+
+  const openDialog = (type) => {
+    if (!currentPowerUp) {
+      setSelectedPowerUp(type); // Set the selected power-up for later confirmation
+      switch (type) {
+        case "freeze":
+          setIsFreezeOpen(true);
+          break;
+        case "shield":
+          setIsShieldOpen(true);
+          break;
+        case "rebound":
+          setIsReboundOpen(true);
+          break;
+        case "wildcard":
+          setIsWildcardOpen(true);
+          break;
+        default:
+          break;
+      }
     }
   };
 
+  const startTimer = () => {
+    setCurrentPowerUp(selectedPowerUp); // Set the active power-up
+    setTimer(600); // Reset to 10 minutes
+    const interval = setInterval(() => {
+      setTimer((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          setCurrentPowerUp(null); // Reset power-up after 10 minutes
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const usePowerUp = async () => {
+    if (!teamId || !selectedPowerUp) return;
+
+    try {
+      const response = await fetch("https://snatch-ieeecs-backend.vercel.app/powerups/use", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          powerUp: selectedPowerUp, // Selected power-up name
+          id: teamId, // The teamId from the URL
+        }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        console.log(`${selectedPowerUp} applied successfully to team ${teamId}`);
+        startTimer(); // Start the timer once the power-up is applied
+      } else {
+        console.error("Failed to apply power-up:", data.message);
+      }
+    } catch (error) {
+      console.error("Error applying power-up:", error);
+    }
+  };
+
+  const formatTime = (time) => {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    return `${minutes < 10 ? `0${minutes}` : minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
+  };
+
   return (
-    <div className="relative h-screen w-full flex justify-center items-center bg-[url('/rectangle.png')] bg-cover bg-center">
-      {/* Logos at opposite top corners */}
-      <div className="absolute flex w-full justify-between top-4 left-0 right-0 z-20 px-8">
-        <Image src="/snatchlogologin.png" width={200} height={200} alt="Snatch Logo" className="object-contain" />
-        <Image src="/ieee.png" width={150} height={150} alt="IEEE Logo" className="object-contain" />
-      </div>
-
-      {/* Gooey Background */}
-      <div className="absolute top-0 left-0 w-full h-3/4 bg-gradient-to-b from-black to-transparent blur-sm z-0 overflow-hidden border-transparent">
-        <div className="absolute bottom-0 left-0 w-full h-full blur-[30px] animate-gooey border-transparent"></div>
-      </div>
-
-      {/* Sign-in Box */}
-      <div className="relative z-10 border border-2 border-[#5CC77B] rounded-3xl p-10 flex justify-center items-center flex-col gap-14 bg-black/30 backdrop-blur-xl">
-        <div className="flex justify-center items-center flex-col border-transparent">
-          <h1 className="text-6xl tracking-tighter font-semibold text-white border-transparent">Welcome!</h1>
-          <label className="text-[#8c9f93] border-transparent">Please sign in to your account</label>
-        </div>
-
-        <div className="flex justify-center items-center flex-col gap-6 border-transparent">
-          {/* Username Input */}
-          <div className="relative w-full">
-            <img src="/username.png" alt="User Icon" className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-            <Input
-              type="text"
-              placeholder="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="bg-[#2D8D48] text-white placeholder:text-white px-10 py-8 w-full border-2 border-[#2D8D48] rounded-lg focus:outline-none focus:border-[#1F6A36] focus:ring-0"
-            />
+    <div className="container mx-auto py-8">
+      <Card>
+        <CardHeader>
+          <CardTitle className="font-Hanson lg:text-6xl font-bold text-5xl">Leaderboard</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-row justify-evenly max-h-64 overflow-y-auto">
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>#</TableCell>
+                  <TableCell>Player</TableCell>
+                  <TableCell>Score</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {leaderboard.map((item) => (
+                  <LeaderboardItem key={item.rank} rank={item.rank} name={item.name} score={item.score} />
+                ))}
+              </TableBody>
+            </Table>
           </div>
+        </CardContent>
+      </Card>
 
-          {/* Password Input */}
-          <div className="relative w-full">
-            <img src="/password.png" alt="Password Icon" className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5" />
-            <Input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="bg-[#2D8D48] focus:outline-none placeholder:text-white px-10 py-8 w-full border-none rounded-lg"
+      {/* Power-Ups Section */}
+      <div className="mt-8">
+        <h2 className="font-Hanson lg:text-6xl font-bold text-5xl mb-4 mx-4">Power Ups</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {powerUps.map((item, index) => (
+            <PowerUpItem
+              key={index}
+              title={item.name.toUpperCase()}
+              imageSrc={`/${item.name}.png`}
+              onClick={() => openDialog(item.name)} // Open dialog on click
+              disabled={!!currentPowerUp || !item.available} // Disable other power-ups if one is active or unavailable
             />
-          </div>
-        </div>
-
-        {/* Login Button */}
-        <div className="rounded-lg">
-          <Button
-            variant="outline"
-            className="w-24 h-12 border-4 border-[#5CC77B] bg-transparent text-white rounded-full"
-            onClick={handleLogin}
-            disabled={loading}
-          >
-            {loading ? "..." : <FaArrowRight className="text-[#5CC77B] w-6 h-6" />}
-          </Button>
+          ))}
         </div>
       </div>
+
+      {/* Power-Up Dialogs */}
+      <ShieldDialog open={isShieldOpen} onOpenChange={setIsShieldOpen} onConfirm={usePowerUp} />
+      <ReboundDialog open={isReboundOpen} onOpenChange={setIsReboundOpen} onConfirm={usePowerUp} />
+      <WildcardDialog open={isWildcardOpen} onOpenChange={setIsWildcardOpen} onConfirm={usePowerUp} />
+      <FreezeDialog open={isFreezeOpen} onOpenChange={setIsFreezeOpen} onConfirm={usePowerUp} />
+
+      {/* Current Active Power-Up Section */}
+      {currentPowerUp && (
+        <div className="mt-8 bg-gray-100 p-4 rounded-lg shadow-lg">
+          <h3 className="text-xl font-bold mb-2">Current Active Power-Up: {currentPowerUp}</h3>
+          <p className="text-lg">Time Left: {formatTime(timer)}</p>
+        </div>
+      )}
     </div>
   );
 };
 
-export default Login;
+export default UserHome;
