@@ -1,76 +1,19 @@
 "use client";
 import { useState } from "react";
 import { FaTrash, FaBan, FaPlus } from "react-icons/fa";
-import Navbar from "../madeComponents/Navbar";
-import Footer from "../madeComponents/Footer";
-import Pool from "../madeComponents/Pool";
-import "../../app/globals.css";
-import { post } from "../service"; 
-
+import Navbar from "../../madeComponents/Navbar";
+import Footer from "../../madeComponents/Footer";
+import Pool from "../../madeComponents/Pool";
+import { post } from "../../service"; 
 
 const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState("rounds");
   const [activeSubTab, setActiveSubTab] = useState("teams");
   const [selectedRound, setSelectedRound] = useState(null);
-
-  // Mock data
-  const [teams, setTeams] = useState([
-    {
-      id: 1,
-      name: "Team A",
-      avatar: "/avatars/avatar1.png",
-      round: 1,
-      pool: 1,
-      members: ["Alice", "Bob", "Charlie", "Dave"],
-      disqualified: false,
-    },
-    {
-      id: 2,
-      name: "Team B",
-      avatar: "/avatars/avatar1.png",
-      round: 1,
-      pool: 1,
-      members: ["Eve", "Frank", "Grace", "Hank"],
-      disqualified: false,
-    },
-    {
-      id: 3,
-      name: "Team C",
-      avatar: "/avatars/avatar1.png",
-      round: 2,
-      pool: 1,
-      members: ["Ivy", "Jack", "Ken", "Liam"],
-      disqualified: false,
-    },
-    {
-      id: 4,
-      name: "Team D",
-      avatar: "/avatars/avatar1.png",
-      round: 3,
-      pool: 1,
-      members: ["Mia", "Noah", "Olivia", "Paul"],
-      disqualified: false,
-    },
-  ]);
-
   const [showForm, setShowForm] = useState(false);
   const [newTeamName, setNewTeamName] = useState("");
   const [newMembers, setNewMembers] = useState(["", "", "", ""]);
-  const [showOverlay, setShowOverlay] = useState(false);
-  const handleCancel = () => {
-    setShowOverlay(false);
-  };
-
-  const handleConfirm = () => {
-    if (actionType === "delete") {
-      console.log(`Team ${teamName} deleted`);
-    } else if (actionType === "disqualify") {
-      console.log(`Team ${teamName} disqualified`);
-    }
-    setShowOverlay(false);
-  };
-
-  const [selectedTeamId, setSelectedTeamId] = useState(null);
+  const [teams, setTeams] = useState([]); 
 
   const handleRoundClick = (round) => {
     setSelectedRound(selectedRound === round ? null : round);
@@ -81,30 +24,34 @@ const AdminPanel = () => {
       alert("Please enter a valid team name and all members.");
       return;
     }
-  
+
     const newTeam = {
       username: newTeamName,
       member1: newMembers[0] || "",
       member2: newMembers[1] || "",
       member3: newMembers[2] || "",
       member4: newMembers[3] || "",
+      round: selectedRound,
     };
-  
+
     try {
-      const response = await post("/admin/team/create", newTeam); 
-  
+      const response = await post("/admin/team/create", newTeam);
+
       if (response.success) {
-        alert(
-          `Team "${response.data.username}" added successfully!\nPassword: ${response.data.password}`
-        ); 
-  
+        alert(`Team "${response.data.username}" added successfully!\nPassword: ${response.data.password}`);
+        
         setTeams((prev) => [
           ...prev,
-          { username: response.data.username, password: response.data.password },
-        ]); 
-  
+          { 
+            id: response.data.id, 
+            username: response.data.username,
+            password: response.data.password,
+            round: selectedRound,
+          },
+        ]);
+
         setNewTeamName("");
-        setNewMembers(["", "", "", ""]); 
+        setNewMembers(["", "", "", ""]);
         setShowForm(false);
       } else {
         alert(response.message || "Failed to add team.");
@@ -114,20 +61,45 @@ const AdminPanel = () => {
       console.error("Add team error:", error);
     }
   };
-  
 
-  const handleDeleteTeam = (teamId) => {
-    setTeams(teams.filter((team) => team.id !== teamId));
-    setShowDeleteModal(false);
+ 
+  const handleDeleteTeam = async (teamId) => {
+    try {
+      const response = await post("/admin/team/delete", { id: teamId });
+
+      if (response.success) {
+        
+        setTeams((prevTeams) => prevTeams.filter((team) => team.id !== teamId));
+        alert("Team deleted successfully!");
+      } else {
+        alert(response.message || "Failed to delete team.");
+      }
+    } catch (error) {
+      console.error("Error deleting team:", error);
+      alert("Error deleting team. Please try again.");
+    }
   };
 
-  const handleDisqualifyTeam = (teamId) => {
-    setTeams(
-      teams.map((team) =>
-        team.id === teamId ? { ...team, disqualified: true } : team
-      )
-    );
-    setShowDisqualifyModal(false);
+  
+  const handleDisqualifyTeam = async (teamId) => {
+    try {
+      const response = await post("/admin/team/eliminate", { id: teamId });
+
+      if (response.success) {
+        
+        setTeams((prevTeams) =>
+          prevTeams.map((team) =>
+            team.id === teamId ? { ...team, disqualified: true } : team
+          )
+        );
+        alert("Team disqualified successfully!");
+      } else {
+        alert(response.message || "Failed to disqualify team.");
+      }
+    } catch (error) {
+      console.error("Error disqualifying team:", error);
+      alert("Error disqualifying team. Please try again.");
+    }
   };
 
   return (
@@ -156,11 +128,11 @@ const AdminPanel = () => {
       {activeTab === "rounds" && (
         <div className="space-y-6">
           {/* Round Selection */}
-          <div className="flex justify-between mx-10 space-x-4 mb-4">
+          <div className="flex justify-between mx-10 space-x-4 mb-4 rounded-full border border-gray p-4 ">
             {[1, 2, 3].map((round) => (
               <div
                 key={round}
-                className={`font-Hanson px-40 py-3 text-xl rounded-tl-[28.03px] rounded-tr-[28.03px] rounded-bl-[28.03px] rounded-br-[28.03px] border-t-[0.7px] border-gray-500 opacity-100 shadow-md font-bold text-white transition ${
+                className={`font-Hanson px-40 py-3 text-xl rounded-tl-[28.03px] rounded-tr-[28.03px] rounded-bl-[28.03px] rounded-br-[28.03px] border-t-[0.7px] opacity-100 shadow-md font-bold text-white transition ${
                   selectedRound === round ? "bg-[#03941B]" : "bg-gray-300"
                 }`}
                 onClick={() => handleRoundClick(round)}
@@ -173,34 +145,27 @@ const AdminPanel = () => {
           {/* Display teams in the selected round */}
           {selectedRound && (
             <Pool
-              teams={teams.filter((team) => team.round === selectedRound)}
+              teams={teams.filter((team) => team.round === selectedRound)} // Filter teams by round
             />
           )}
         </div>
       )}
 
       {activeTab === "manage" && (
-        <div className="m-4 bg-white p-4 rounded-lg shadow-md">
+        <div className="m-4 bg-white p-4 shadow-md">
           {/* Sub-tabs for Manage section */}
-          <div
-            className=" text-2xl flex justify-center
-           space-x-4 mx-20 mb-4"
-          >
+          <div className=" text-2xl flex p-4 rounded-full border border-gray justify-center space-x-4 mx-20 mb-4">
             <button
-              className={`px-40 py-3 rounded-tl-[28.03px] rounded-tr-[28.03px] rounded-bl-[28.03px] rounded-br-[28.03px] border-t-[0.7px] border-gray-500 opacity-100   ${
-                activeSubTab === "teams"
-                  ? "bg-[#03941B] text-white font-semibold"
-                  : "bg-gray-200 text-black"
+              className={`font-Hanson px-40 py-3 rounded-tl-[28.03px] rounded-tr-[28.03px] rounded-bl-[28.03px] rounded-br-[28.03px] border-t-[0.7px]  opacity-100 ${
+                activeSubTab === "teams" ? "bg-[#03941B] text-white font-semibold" : "bg-gray-200 text-black"
               }`}
               onClick={() => setActiveSubTab("teams")}
             >
               Teams
             </button>
             <button
-              className={`px-40 py-3 rounded-tl-[28.03px] rounded-tr-[28.03px] rounded-bl-[28.03px] rounded-br-[28.03px] border-t-[0.7px] border-gray-500 opacity-100 ${
-                activeSubTab === "edit"
-                  ? "bg-[#03941B] text-white font-semibold"
-                  : "bg-gray-200 text-black"
+              className={ ` font-Hanson px-40 py-3 rounded-tl-[28.03px] rounded-tr-[28.03px] rounded-bl-[28.03px] rounded-br-[28.03px] border-t-[0.7px]  opacity-100 ${
+                activeSubTab === "edit" ? "bg-[#03941B] text-white font-semibold" : "bg-gray-200 text-black"
               }`}
               onClick={() => setActiveSubTab("edit")}
             >
@@ -225,35 +190,8 @@ const AdminPanel = () => {
                     key={team.id}
                     className="flex justify-between items-center p-2 border-b"
                   >
-                    <span className="flex justify-center space-x-2">
-                      {team.avatar.startsWith("/") ? (
-                        <img
-                          src={team.avatar}
-                          alt={team.name}
-                          className="w-10 h-10 rounded-full"
-                        />
-                      ) : (
-                        <span className="text-3xl">{team.avatar}</span>
-                      )}
-                      <span>{team.name}</span>
-                      <span className=" ">#Pool{team.pool}</span>
-                    </span>
-                    <div className="space-x-3">
-                      <button
-                        className="text-red-500 hover:text-red-700"
-                        onClick={() => {
-                          setSelectedTeamId(team.id);
-                          setShowDeleteModal(true);
-                        }}
-                      ></button>
-                      <button
-                        className="text-yellow-500 hover:text-yellow-700"
-                        onClick={() => {
-                          setSelectedTeamId(team.id);
-                          setShowDisqualifyModal(true);
-                        }}
-                      ></button>
-                    </div>
+                    <span>{team.username}</span>
+                    
                   </li>
                 ))}
               </ul>
@@ -269,36 +207,22 @@ const AdminPanel = () => {
                     className="flex justify-between items-center p-2 border-b"
                   >
                     <span className="flex items-center space-x-2">
-                      {team.avatar.startsWith("/") ? (
-                        <img
-                          src={team.avatar}
-                          alt={team.name}
-                          className="w-10 h-10 rounded-full"
-                        />
-                      ) : (
-                        <span className="text-3xl">{team.avatar}</span>
-                      )}
-                      <span>{team.name}</span>
+                      <span>{team.username}</span>
                     </span>
                     <div className="space-x-3">
-                      <button
-                        className="text-red-500 hover:text-red-700"
-                        onClick={() => {
-                          setSelectedTeamId(team.id);
-                          sh(true);
-                        }}
-                      >
-                        <FaTrash />
-                      </button>
-                      <button
-                        className="text-yellow-500 hover:text-yellow-700"
-                        onClick={() => {
-                          setSelectedTeamId(team.id);
-                          setShowDisqualifyModal(true);
-                        }}
-                      >
-                        <FaBan />
-                      </button>
+                    <button
+  className="text-white bg-red-600 hover:bg-red-700 px-4 py-2 rounded-full"
+  onClick={() => handleDeleteTeam(team.id)}
+>
+  Delete
+</button>
+<button
+  className="text-white bg-green-600 hover:bg-green-700 px-4 py-2 rounded-full "
+  onClick={() => handleDisqualifyTeam(team.id)}
+>
+  Disqualify
+</button>
+
                     </div>
                   </li>
                 ))}
@@ -312,9 +236,7 @@ const AdminPanel = () => {
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg shadow-lg">
-            <h2 className="text-xl font-semibold text-green-700 mb-4">
-              Add New Team
-            </h2>
+            <h2 className="text-xl font-semibold text-green-700 mb-4">Add New Team</h2>
             <input
               type="text"
               placeholder="Team Name"

@@ -12,7 +12,7 @@ export default function AdminLogin() {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await post("login", { username, password });
+      const response = await post("/login", { username, password });
 
       if (response.success) {
         localStorage.setItem("token", response.data.token);
@@ -60,3 +60,7 @@ export default function AdminLogin() {
     </div>
   );
 }
+
+
+
+

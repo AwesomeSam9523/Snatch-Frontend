@@ -1,5 +1,5 @@
-"use client"
-import React, { useState } from "react";
+"use client";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHead, TableBody, TableRow, TableCell } from "@/components/ui/table";
@@ -7,8 +7,6 @@ import FreezeDialog from "@/app/madeComponents/FreezeDialog";
 import ShieldDialog from "@/app/madeComponents/ShieldDialog";
 import ReboundDialog from "@/app/madeComponents/ReboundDialog";
 import WildcardDialog from "@/app/madeComponents/WildcardDialog";
-
-// Shield Dialog Component
 
 const LeaderboardItem = ({ rank, name, score }) => (
   <TableRow className="transition-transform transform hover:scale-105 hover:bg-gray-100 duration-300 ease-in-out">
@@ -33,15 +31,7 @@ const UserHome = () => {
   const [isShieldOpen, setIsShieldOpen] = useState(false);
   const [isReboundOpen, setIsReboundOpen] = useState(false);
   const [isWildcardOpen, setIsWildcardOpen] = useState(false);
-
-  const leaderboard = [
-    { rank: 1, name: "Power Rangers", score: 100 },
-    { rank: 2, name: "Meep Morp Zeep", score: 90 },
-    { rank: 3, name: "BHEEM KI SHAKTI DHOOM MACHAYE", score: 85 },
-    { rank: 4, name: "Untitled Name", score: 22 },
-    { rank: 5, name: "Team 5", score: 60 },
-    { rank: 6, name: "Team 6", score: 45 },
-  ];
+  const [leaderboard, setLeaderboard] = useState([]);
 
   const powerUps = [
     { title: "FREEZE", imageSrc: "/Freeze.png", onClick: () => setIsFreezeOpen(true) },
@@ -50,6 +40,23 @@ const UserHome = () => {
     { title: "WILDCARD", imageSrc: "/wildcard.png", onClick: () => setIsWildcardOpen(true) },
   ];
 
+  
+  useEffect(() => {
+    const fetchLeaderboard = async () => {
+      const data = { username: "yourUsername", password: "yourPassword" };
+
+      const response = await post("/leaderboard", data);
+
+      if (response && response.success) {
+        setLeaderboard(response.data); 
+      } else {
+        console.error("Failed to fetch leaderboard");
+      }
+    };
+
+    fetchLeaderboard();
+  }, []);
+
   return (
     <div className="container mx-auto py-8">
       <Card>
@@ -57,11 +64,11 @@ const UserHome = () => {
           <CardTitle className="font-Hanson lg:text-6xl font-bold text-5xl">Leaderboard</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className=" flex flex-row justify-evenly max-h-64 overflow-y-auto">
+          <div className="flex flex-row justify-evenly max-h-64 overflow-y-auto">
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell >#</TableCell>
+                  <TableCell>#</TableCell>
                   <TableCell>Player</TableCell>
                   <TableCell>Score</TableCell>
                 </TableRow>
@@ -76,7 +83,7 @@ const UserHome = () => {
         </CardContent>
       </Card>
 
-      {/* Power-Ups */}
+      {/* Power-Ups Section */}
       <div className="mt-8">
         <h2 className="font-Hanson lg:text-6xl font-bold text-5xl mb-4 mx-4">Power Ups</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -90,7 +97,6 @@ const UserHome = () => {
       <ShieldDialog open={isShieldOpen} onOpenChange={setIsShieldOpen} />
       <ReboundDialog open={isReboundOpen} onOpenChange={setIsReboundOpen} />
       <WildcardDialog open={isWildcardOpen} onOpenChange={setIsWildcardOpen} />
-      {/* Assuming FreezeDialog is imported */}
       <FreezeDialog isOpen={isFreezeOpen} setIsOpen={setIsFreezeOpen} />
     </div>
   );
